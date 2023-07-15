@@ -32,15 +32,17 @@ pub struct LocalRemoteFile {
 
 impl LocalBackend {
     pub async fn new(config: LocalStorageConfig) -> ServerResult<Self> {
-        fs::create_dir_all(&config.path)
-            .await
-            .map_err(ServerError::storage_error)?;
+        for bucket in 0..=0xff {
+            fs::create_dir_all((&config.path).join(format!("{:02x}", bucket)))
+                .await
+                .map_err(ServerError::storage_error)?;
+        }
 
         Ok(Self { config })
     }
 
     fn get_path(&self, p: &str) -> PathBuf {
-        self.config.path.join(p)
+        self.config.path.join(&p[..2]).join(p)
     }
 }
 
